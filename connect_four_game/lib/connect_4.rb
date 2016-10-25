@@ -17,7 +17,77 @@ class Connect4
 			place_moves			
 		end
 
+		def end_of_game?
+			#checking all vertical lines:
+			result = false
+			3.times do |row|
+				7.times do |column|
+					result ||= check_to_up([row, column])
+				end
+			end
+
+			#checking all horizontal lines:
+			6.times do |row|
+				4.times do |column|
+					result ||= check_to_right([row, column])
+				end
+			end
+
+			#checking rising diagonals
+			3.times do |row|
+				4.times do |column|
+					result ||= check_to_right_n_up([row, column])
+				end
+			end
+
+			#checking declining diagonals
+			3.upto(5) do |row|
+				4.times do |column|
+					result ||= check_to_right_n_down([row, column])
+				end
+			end
+
+			result
+		end
+
 		private
+
+		# CONSIDER: make all 4 methods get use of procs
+		def check_to_right(position)
+			chip = @board[position]
+			return false if chip.nil?
+			3.times do |i|
+				return false if chip != @board[[position[0], position[1] + i + 1]]
+			end
+			true
+		end
+
+		def check_to_up(position)
+			chip = @board[position]
+			return false if chip.nil?
+			3.times do |i|
+				return false if chip != @board[[position[0] + i + 1, position[1]]]
+			end
+			true	
+		end
+
+		def check_to_right_n_up(position)
+			chip = @board[position]
+			return false if chip.nil?
+			3.times do |i|
+				return false if chip != @board[[position[0] + i + 1, position[1] + i + 1]]
+			end
+			true			
+		end
+
+		def check_to_right_n_down(position)
+			chip = @board[position]
+			return false if chip.nil?
+			3.times do |i|
+				return false if chip != @board[[position[0] - i - 1, position[1] + i + 1]]
+			end
+			true			
+		end
 
 		def place_moves
 			background = @background.split("\n")			
@@ -30,9 +100,9 @@ class Connect4
 		def get_column(move)
 			@board.select { |k, value| k[1] == move }			
 		end
-		
+
 		def valid_move?(move)
-			(0..5).include?(move) && get_column(move).size < 6
+			(0..6).include?(move) && get_column(move).size < 6
 		end
 		
 		def initialize
@@ -42,7 +112,7 @@ class Connect4
 	end
 
 	class Player
-		@@chips = [] # one session at a time is allowed
+		@@chips = [] # one session at a time is supported
 		attr_reader :chip
 		def self.create
 			name = get_name
@@ -94,6 +164,7 @@ class Connect4
 		puts "Player #{@current_player}, it is your turn."		
 		move = get_move
 		@board.add_move(move, @current_player.chip)
+		puts "game over" if @board.end_of_game?
 	end
 
 	def get_move

@@ -5,7 +5,7 @@ describe Connect4::Board do
 	let(:create_board) do
 		fake_console
 		Connect4::Board.create
-	end
+	end	
 	let(:board_values){ create_board.instance_variable_get(:@board) }
 	let(:player_token){ double("player_token") }
 	context "creating new board" do		
@@ -24,6 +24,122 @@ describe Connect4::Board do
 		end
 	end
 
+	describe "#end_of_game?" do		
+		let(:player1) do 
+			player1 = double("Bob")
+			allow(player1).to receive(:chip).and_return("x")
+			player1
+		end	
+		let(:player2) do 
+			player2 = double("Nick")
+			allow(player2).to receive(:chip).and_return("y")
+			player2
+		end
+		let(:winner) { [player1, player2].sample }
+
+		def setup_board_up_to(n)# n > 0
+			board = create_board
+			filled_board_x = [[[0, 0], [0, 1], [0, 4], [0, 5]],
+												[[1, 2], [1, 3], [1, 6]],
+												[[2, 0], [2, 1], [2, 4], [2, 5]],
+												[[3, 2], [3, 3], [3, 6]],
+												[[4, 0], [4, 1], [4, 4], [4, 5]],
+												[[5, 2], [5, 3], [5, 6]]]
+			filled_board_y = [[[0, 2], [0, 3], [0, 6]],
+												[[1, 0], [1, 1], [1, 4], [1, 5]],
+												[[2, 2], [2, 3], [2, 6]],
+												[[3, 0], [3, 1], [3, 4], [3, 5]],
+												[[4, 2], [4, 3], [4, 6]],
+												[[5, 0], [5, 1], [5, 4], [5, 5]]]
+			rows_below = n
+			filled_board_x_below = filled_board_x.first(rows_below)
+			filled_board_y_below = filled_board_y.first(rows_below)
+			rows_below.times do |i|
+				row_x = filled_board_x[i]				
+				row_x.each do |move|					
+					board.add_move(move[1], player1.chip)
+				end
+				row_y = filled_board_y[i]
+				row_y.each do |move|
+					board.add_move(move[1], player2.chip)
+				end
+			end
+			board			
+		end
+
+		let(:setup_board) do
+			setup_board_up_to(rand(5) + 1)
+		end
+		let(:setup_board_by_row) do				
+				start_column = rand(4)
+				board = setup_board
+				start_column.upto(start_column + 3) { |i| board.add_move(i, winner.chip) }
+				board
+			end
+		context "resolving positively" do
+			let(:setup_board_by_column) do
+				board = create_board
+				column = rand(7)
+				4.times { board.add_move(column, winner.chip) }				
+				board
+			end
+
+			let(:setup_board_diagonally_1) do
+				top_row = rand(3) + 4				
+				board = setup_board_up_to(top_row)
+				board_values = board.instance_variable_get(:@board)				
+				row_start = rand(3..top_row - 1)
+				column_start = rand(4)				
+				start_pos = [row_start, column_start]
+				4.times do |i|
+					board_values[[start_pos[0] - i, start_pos[1] + i]] = winner.chip
+				end
+				board.instance_variable_set(:@board, board_values)
+				board
+			end
+
+			let(:setup_board_diagonally_2) do
+				top_row = rand(3) + 4				
+				board = setup_board_up_to(top_row)
+				board_values = board.instance_variable_get(:@board)				
+				row_start = rand(0..top_row - 4)
+				column_start = rand(4)				
+				start_pos = [row_start, column_start]
+				4.times do |i|
+					board_values[[start_pos[0] + i, start_pos[1] + i]] = winner.chip
+				end
+				board.instance_variable_set(:@board, board_values)
+				board
+			end
+
+			it "having 4 chips in lowering diagonal" do
+				expect(setup_board_diagonally_1.end_of_game?).to be true
+			end
+
+			it "having 4 chips in rising diagonal" do
+				expect(setup_board_diagonally_2.end_of_game?).to be true
+			end
+
+			it "having 4 chips in one column" do
+				expect(setup_board_by_column.end_of_game?).to be true
+			end
+
+			it "having 4 chips in one row" do
+				expect(setup_board_by_row.end_of_game?).to be true
+			end
+		end
+
+		context "resolving negatively" do
+			it "having an empty board" do				
+				expect(create_board.end_of_game?).to be_falsey
+			end			
+
+			it "having a non-winning board" do				
+				expect(setup_board.end_of_game?).to be_falsey
+			end
+		end
+	end
+	
 	describe "#get_column" do
 		context "putting 3 tokens in the same solumn" do
 			let(:board) do
@@ -65,10 +181,14 @@ describe Connect4::Board do
 	end
 
 	describe "#valid_move?" do		
-		let(:move){ rand(0..6) }
+		let(:move){ rand(1..5) }
 
 		context "checking correct move" do			
 			it { expect(create_board.send(:valid_move?, move)).to be true }			
+
+			it { expect(create_board.send(:valid_move?, 6)).to be true }
+
+			it { expect(create_board.send(:valid_move?, 0)).to be true }
 		end
 
 		context "checking incorrect move" do

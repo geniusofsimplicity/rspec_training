@@ -15,11 +15,11 @@ describe Connect4 do
 		allow(player2).to receive(:chip).and_return("x")
 		player2
 	end
-	let(:game){Connect4.new(player1, player2)}
 
+	let(:game){Connect4.new(player1, player2)}
+	
 	describe ".initialize" do		
-		context "setting up" do			
-			let(:game){Connect4.new(player1, player2)}
+		context "setting up" do
 			it "players" do						
 				expect(game.instance_variable_get(:@player1)).to eql(player1)
 				expect(game.instance_variable_get(:@player2)).to eql(player2)
@@ -30,15 +30,9 @@ describe Connect4 do
 			end
 		end
 	end
-
+	
 	describe ".setup" do		
-		context "setting up game object" do
-		# let(:fake_console) do
-		# 	object_class = class_double("Object").as_stubbed_const
-		# 	allow(object_class).to receive(:puts).and_return(nil)
-		# 	allow(object_class).to receive(:gets).and_return("")
-		# 	object_class
-		# end
+		context "setting up game object" do		
 			let(:new_game) do 
 				# fake_console
 				Connect4.setup
@@ -87,12 +81,19 @@ describe Connect4 do
 
 	describe "#handle_turn" do
 		let(:block_get_move){ allow(game).to receive(:get_move){ nil } }
+		let(:board) { game.instance_variable_get(:@board) }			
 		context "deligating printing board" do
-			let(:board) { game.instance_variable_get(:@board) }			
-			
 			it do
 				block_get_move
 				expect(board).to receive(:print_board).once								
+				game.send(:handle_turn)
+			end
+		end
+
+		context "deligating to check board" do			
+			it do
+				block_get_move
+				expect(board).to receive(:end_of_game?).once								
 				game.send(:handle_turn)
 			end
 		end
