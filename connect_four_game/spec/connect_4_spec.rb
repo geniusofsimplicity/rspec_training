@@ -16,6 +16,8 @@ describe Connect4 do
 		player2
 	end
 
+	let(:block_output){ allow(Object).to receive(:puts){ nil } }
+
 	let(:game){Connect4.new(player1, player2)}
 	
 	describe ".initialize" do		
@@ -43,11 +45,13 @@ describe Connect4 do
 			end
 
 			it do
+				block_output
 				player_class
 				expect(new_game).to be_a(Connect4)				
 			end			
 			
 			it "creates new players" do
+				block_output
 				player_class
 				expect(Connect4::Player).to receive(:create).twice
 				Connect4.setup
@@ -56,12 +60,14 @@ describe Connect4 do
 			let(:fake_console) { allow(Object).to receive(:gets).and_return("pl1", "pl2") }
 
 			it "choosing first player" do				
+				block_output
 				fake_console
 				expect(new_game.instance_variable_get(:@current_player)).to be_instance_of Connect4::Player				
 			end
 
 			context "creating new board" do
 				it do
+					block_output
 					player_class
 					expect(Connect4::Board).to receive(:create).once
 					Connect4.setup
@@ -73,6 +79,7 @@ describe Connect4 do
 	describe "#start" do
 		context "deligating work to handle_turn method" do
 			it do
+				block_output
 				expect(game).to receive(:handle_turn).at_least(1)
 				game.start
 			end
@@ -80,12 +87,13 @@ describe Connect4 do
 	end
 
 	describe "#handle_turn" do
-		let(:block_get_move){ allow(game).to receive(:get_move){ nil } }
+		let(:block_get_move){ allow(game).to receive(:get_move){ nil } }		
 		let(:board) { game.instance_variable_get(:@board) }			
 		context "deligating printing board" do
 			it do
 				block_get_move
-				expect(board).to receive(:print_board).once								
+				block_output				
+				expect(board).to receive(:print_board).at_least(1)								
 				game.send(:handle_turn)
 			end
 		end
@@ -93,7 +101,8 @@ describe Connect4 do
 		context "deligating to check board" do			
 			it do
 				block_get_move
-				expect(board).to receive(:end_of_game?).once								
+				block_output
+				expect(board).to receive(:end_of_game?).at_least(1)								
 				game.send(:handle_turn)
 			end
 		end
@@ -103,7 +112,8 @@ describe Connect4 do
 			
 			it do
 				block_get_move
-				expect(board).to receive(:add_move).once								
+				block_output
+				expect(board).to receive(:add_move).at_least(1)								
 				game.send(:handle_turn)
 			end
 		end
@@ -111,21 +121,10 @@ describe Connect4 do
 		context "deligated to get move" do			
 			it do	
 				block_get_move
+				block_output
 				expect(game).to receive(:get_move).at_least(1)
 				game.send(:handle_turn)				
 			end
 		end
 	end
-
-	# TODO: Errno::ENOENT:
-	#       No such file or directory @ rb_sysopen - --pattern
-	# describe "#get_move" do
-	# 	let!(:fake_console){ allow(Object).to receive(:gets).and_return("3") }
-	# 	context "ask player until correct input" do 
-	# 		it do
-	# 			fake_console
-	# 			expect(game.send(:get_move)).to eql(3)
-	# 		end
-	# 	end
-	# end
 end

@@ -14,7 +14,9 @@ class Connect4
 		end
 
 		def print_board
-			place_moves			
+			result = place_moves
+			puts result
+			result
 		end
 
 		def end_of_game?
@@ -160,23 +162,29 @@ class Connect4
 	end
 
 	def handle_turn
-		@board.print_board
-		puts "Player #{@current_player}, it is your turn."		
-		move = get_move
-		@board.add_move(move, @current_player.chip)
-		puts "game over" if @board.end_of_game?
+		42.times do
+			@board.print_board
+			puts "Player #{@current_player} (#{@current_player.chip}), it is your turn."		
+			move = get_move
+			@board.add_move(move, @current_player.chip)
+			if @board.end_of_game?
+				@board.print_board
+				puts "Player #{@current_player} (#{@current_player.chip}) has won!"
+				return
+			end
+			@current_player = @current_player == @player1 ? @player2 : @player1			
+		end
+		puts "It is draw."
 	end
 
 	def get_move
-		puts "Please, enter the column number (1-7) where to put your chip into."
-		column = nil
-		ask_again = false
-		until (1..7).include?(column)
-			puts "Please, enter the number in range from 1 to 7" if ask_again
+		column = nil		
+		loop do
+			puts "Please, enter the column number (1-7) where to put your chip into."
 			column = gets
 			column.chomp! if column
-			column.to_i			
-			ask_again = true
+			column = column.to_i			
+			break if (1..7).include?(column)
 		end
 		column - 1		
 	end

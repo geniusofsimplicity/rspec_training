@@ -1,7 +1,10 @@
 require "connect_4.rb"
 
 describe Connect4::Board do
-	let(:fake_console) { allow(Object).to receive(:gets).and_return("pl1", "pl2") }
+	let(:fake_console) do
+		allow(Object).to receive(:gets).and_return("pl1", "pl2")
+		allow(Object).to receive(:puts){ nil }
+	end
 	let(:create_board) do
 		fake_console
 		Connect4::Board.create
@@ -211,7 +214,10 @@ describe Connect4::Board do
 		let(:board_result_empty){ create_board.instance_variable_get(:@background) }
 
 		context "checking empty board" do
-			it { expect(create_board.print_board).to eql(board_result_empty) }			
+			it do
+				fake_console
+				expect(create_board.print_board).to eql(board_result_empty)				
+			end
 		end
 
 		context "having 2 moves added" do
@@ -229,7 +235,10 @@ describe Connect4::Board do
 				board		
 			end
 
-			it { expect(board_with_two_moves.print_board).to eql(board_expected.join("\n")) }			
+			it do
+				fake_console
+				expect(board_with_two_moves.print_board).to eql(board_expected.join("\n"))
+			end
 		end
 	end
 end

@@ -3,7 +3,10 @@ require "connect_4.rb"
 describe Connect4::Player do	
 	let(:player1_name) { "pl1" }
 	let(:player2_name) { "pl2" }
-	let(:fake_console) { allow(Object).to receive(:gets).and_return(player1_name, player2_name) }
+	let(:fake_console) do
+		allow(Object).to receive(:gets).and_return(player1_name, player2_name)
+		allow(Object).to receive(:puts){ nil }
+	end
 	describe ".get_name" do
 		context "working with console" do
 			it "asking for name" do				
